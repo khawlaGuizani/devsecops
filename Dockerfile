@@ -1,7 +1,7 @@
 # Multi-stage build for Spring Boot application
 
 # Stage 1: Build stage
-FROM maven:3.8.4-openjdk-8-slim AS build
+FROM maven:3.8-eclipse-temurin-8 AS build
 
 # Set working directory
 WORKDIR /app
@@ -17,7 +17,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # Stage 2: Runtime stage
-FROM openjdk:8-jre-slim
+FROM eclipse-temurin:8-jre
 
 # Set working directory
 WORKDIR /app
