@@ -22,17 +22,7 @@ pipeline {
             }
         }
 
-        stage('SCA - Dependency Analysis') {
-            steps {
-                sh '''
-                echo "=== Analyse SCA avec OWASP Dependency-Check ==="
-                dependency-check.sh --project devsecops \
-                    --scan . \
-                    --format HTML \
-                    --out dependency-check-report
-                '''
-            }
-        }
+        
 
         stage('Secret Scan - Gitleaks') {
             steps {
@@ -68,6 +58,18 @@ pipeline {
                 echo "=== DAST scan avec OWASP ZAP ==="
                 docker run --rm -v $(pwd):/zap/wrk/:rw ghcr.io/zaproxy/zaproxy:stable \
                     zap-baseline.py -t http://192.168.50.4:8090 -r zap_report.html || true
+                '''
+            }
+        }
+
+        stage('SCA - Dependency Analysis') {
+            steps {
+                sh '''
+                echo "=== Analyse SCA avec OWASP Dependency-Check ==="
+                dependency-check.sh --project devsecops \
+                    --scan . \
+                    --format HTML \
+                    --out dependency-check-report
                 '''
             }
         }
