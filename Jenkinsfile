@@ -22,8 +22,6 @@ pipeline {
             }
         }
 
-        
-
         stage('Secret Scan - Gitleaks') {
             steps {
                 sh '''
@@ -56,9 +54,26 @@ pipeline {
             steps {
                 sh '''
                 echo "=== DAST scan avec OWASP ZAP ==="
-                docker run --rm -v $(pwd):/zap/wrk/:rw ghcr.io/zaproxy/zaproxy:stable \
+                
+                # Créer un dossier temporaire pour les rapports ZAP
+                mkdir -p $WORKSPACE/zap-report
+                chmod 777 $WORKSPACE/zap-report
+
+                # Lancer ZAP en mode baseline scan
+                docker run --rm \
+                    -v $WORKSPACE/zap-report:/zap/wrk/:rw \
+                    -p 8090:8090 \
+                    ghcr.io/zaproxy/zaproxy:stable \
                     zap-baseline.py -t http://192.168.50.4:8090 -r zap_report.html || true
+
+                # Afficher le rapport
+                cat $WORKSPACE/zap-report/zap_report.html
                 '''
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'zap-report/zap_report.html', fingerprint: true
+                }
             }
         }
 
