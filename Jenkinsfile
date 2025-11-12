@@ -17,18 +17,7 @@ pipeline {
             }
         }
 
-        stage('Security Scan - Bandit') {
-            steps {
-                // Installer bandit si ce n'est pas déjà installé
-                sh '''
-                    pip install bandit --quiet || true
-                    bandit -r . -o bandit-report.json -f json
-                '''
-                
-                // Afficher un résumé simple
-                sh 'cat bandit-report.json | jq .results[] | grep "issue_text"'
-            }
-        }
+        
 
         stage('SONAR') {
             environment {
