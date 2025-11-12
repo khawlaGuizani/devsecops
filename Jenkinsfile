@@ -67,7 +67,7 @@ pipeline {
                 sh '''
                 echo "=== DAST scan avec OWASP ZAP ==="
                 docker run --rm -v $(pwd):/zap/wrk/:rw ghcr.io/zaproxy/zaproxy:stable \
-                    zap-baseline.py -t http://192.168.50.4:8080 -r zap_report.html || true
+                    zap-baseline.py -t http://192.168.50.4:8090 -r zap_report.html || true
                 '''
             }
         }
