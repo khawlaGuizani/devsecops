@@ -11,4 +11,4 @@ rules:
       return "<h1>" + $INPUT + "</h1>"
     message: "XSS detected"
     languages: [java]
-    severity: ERROR
+   # severity: ERROR
