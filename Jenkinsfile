@@ -55,7 +55,7 @@ cat trivy-image-scan.txt
                 sh '''
 echo "=== DAST scan avec OWASP ZAP (installé localement) ==="
 
-# Créer un dossier pour les rapports ZAP dans le workspace
+# Créer un dossier pour les rapports ZAP
 mkdir -p $WORKSPACE/zap-report
 
 # Lancer ZAP en mode baseline scan
@@ -63,8 +63,10 @@ zaproxy -cmd -quickurl http://192.168.50.4:8090 \
         -quickout $WORKSPACE/zap-report/zap_report.html || true
 
 # Vérifier que le rapport a été généré
-if [ -f $WORKSPACE/zap-report/zap_report.html ]; then
-    cat $WORKSPACE/zap-report/zap_report.html
+REPORT="$WORKSPACE/zap-report/zap_report.html"
+if [ -f "$REPORT" ]; then
+    echo "✅ Rapport ZAP généré : $REPORT"
+    cat "$REPORT"
 else
     echo "⚠️ Le rapport ZAP n'a pas été généré !"
 fi
@@ -76,7 +78,6 @@ fi
                 }
             }
         }
-
 
         stage('SCA - Dependency Analysis') {
             steps {
