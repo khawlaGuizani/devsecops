@@ -22,6 +22,18 @@ pipeline {
             }
         }
 
+        stage('SonarQube Analysis') {
+            steps {
+                sh '''
+echo "=== Analyse SonarQube ==="
+mvn sonar:sonar \
+    -Dsonar.projectKey=devops_git \
+    -Dsonar.host.url=${SONAR_HOST_URL} \
+    -Dsonar.login=${SONAR_AUTH_TOKEN} || true
+'''
+            }
+        }
+
         stage('Secret Scan - Gitleaks') {
             steps {
                 sh '''
@@ -135,16 +147,6 @@ fi
             }
         }
 
-        stage('SonarQube Analysis') {
-            steps {
-                sh '''
-echo "=== Analyse SonarQube ==="
-mvn sonar:sonar \
-    -Dsonar.projectKey=devops_git \
-    -Dsonar.host.url=${SONAR_HOST_URL} \
-    -Dsonar.login=${SONAR_AUTH_TOKEN} || true
-'''
-            }
-        }
+
     }
 }

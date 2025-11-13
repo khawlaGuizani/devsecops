@@ -1,0 +1,71 @@
+# Configuration Gitleaks pour détection de secrets
+# Gitleaks scanne automatiquement les commits pour détecter les secrets exposés
+
+title = "Gitleaks Configuration - Timesheet DevOps"
+
+[extend]
+# Utiliser les règles par défaut de Gitleaks
+useDefault = true
+
+# Règles personnalisées pour le projet
+[[rules]]
+id = "custom-api-key"
+description = "Détection de clés API personnalisées"
+regex = '''(?i)(api[_-]?key|apikey|api_key)\s*[:=]\s*['"]?([a-zA-Z0-9]{32,})['"]?'''
+entropy = 3.5
+tags = ["key", "api", "secret"]
+
+[[rules]]
+id = "custom-database-password"
+description = "Détection de mots de passe de base de données"
+regex = '''(?i)(db[_-]?password|database[_-]?password|db[_-]?pass)\s*[:=]\s*['"]?([a-zA-Z0-9!@#$%^&*]{8,})['"]?'''
+entropy = 3.0
+tags = ["password", "database", "secret"]
+
+[[rules]]
+id = "custom-jwt-token"
+description = "Détection de tokens JWT"
+regex = '''eyJ[A-Za-z0-9-_=]+\.eyJ[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*'''
+entropy = 0
+tags = ["jwt", "token", "secret"]
+
+[[rules]]
+id = "custom-aws-credentials"
+description = "Détection de credentials AWS"
+regex = '''(?i)(aws[_-]?access[_-]?key[_-]?id|aws[_-]?secret[_-]?access[_-]?key)\s*[:=]\s*['"]?([A-Z0-9]{20,40})['"]?'''
+entropy = 3.5
+tags = ["aws", "credentials", "secret"]
+
+[[rules]]
+id = "custom-mysql-connection"
+description = "Détection de chaînes de connexion MySQL avec mot de passe"
+regex = '''jdbc:mysql://[^:]+:[^@]+@[^\s'"]+'''
+entropy = 0
+tags = ["database", "mysql", "password", "connection"]
+
+# Exclusions - fichiers à ignorer
+[allowlist]
+description = "Fichiers et chemins à exclure du scan"
+paths = [
+    '''\.git/''',
+    '''target/''',
+    '''\.idea/''',
+    '''\.vscode/''',
+    '''node_modules/''',
+    '''\.semgrep/''',
+    '''\.gitleaks/''',
+    '''SECURITY-GUIDE\.md''',
+    '''\.pre-commit-config\.yaml''',
+    '''\.gitleaks\.toml'''
+]
+
+commits = [
+    # Exclure les commits de migration ou de configuration initiale si nécessaire
+]
+
+regexes = [
+    # Exclure certains patterns si nécessaire (ex: exemples de documentation)
+    '''example[_-]?key''',
+    '''test[_-]?password''',
+    '''sample[_-]?token'''
+]

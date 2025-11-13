@@ -1,0 +1,21 @@
+# Configuration Pre-commit hooks simplifiée pour Windows
+# Installation: pip install pre-commit
+# Activation: pre-commit install
+
+repos:
+  # Hook Semgrep - Scan de sécurité SAST
+  - repo: local
+    hooks:
+      - id: semgrep
+        name: Semgrep - Analyse de securite
+        entry: python -m semgrep --config .semgrep.yml src/ --error
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [commit]
+
+# Configuration globale
+default_language_version:
+  python: python3
+
+fail_fast: false

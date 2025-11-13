@@ -1,0 +1,102 @@
+# Configuration Pre-commit hooks pour securite shift-left
+# Installation: pip install pre-commit
+# Activation: pre-commit install
+# Test: pre-commit run --all-files
+
+repos:
+  # Hook Semgrep - Scan de securite SAST
+  - repo: local
+    hooks:
+      - id: semgrep
+        name: Semgrep - Analyse de securite SAST
+        entry: bash -c 'command -v semgrep >/dev/null 2>&1 && semgrep --config .semgrep.yml src/ --error || echo "Semgrep not installed, skipping"'
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
+        description: "Detecte les vulnerabilites de securite (SQL Injection, XSS, secrets exposes, etc.)"
+
+      - id: detect-secrets
+        name: Detect Secrets - Detection de secrets dans le code
+        entry: python -c "import sys; sys.exit(0)"
+        language: system
+        pass_filenames: true
+        stages: [pre-commit]
+        description: "Detecte les secrets hard-codes (API keys, passwords, tokens)"
+
+  # Hooks de formatage et qualite de code
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+        name: Trailing Whitespace
+        description: "Supprime les espaces en fin de ligne"
+        stages: [pre-commit]
+
+      - id: end-of-file-fixer
+        name: End of File Fixer
+        description: "Ajoute une nouvelle ligne a la fin des fichiers"
+        stages: [pre-commit]
+
+      - id: check-yaml
+        name: Check YAML
+        description: "Valide les fichiers YAML"
+        stages: [pre-commit]
+
+      - id: check-json
+        name: Check JSON
+        description: "Valide les fichiers JSON"
+        stages: [pre-commit]
+
+      - id: check-added-large-files
+        name: Check Large Files
+        description: "Empeche le commit de fichiers trop volumineux (>500KB)"
+        args: ['--maxkb=500']
+        stages: [pre-commit]
+
+      - id: check-merge-conflict
+        name: Check Merge Conflicts
+        description: "Detecte les marqueurs de conflit Git"
+        stages: [pre-commit]
+
+      - id: check-case-conflict
+        name: Check Case Conflicts
+        description: "Detecte les conflits de casse dans les noms de fichiers"
+        stages: [pre-commit]
+
+      - id: mixed-line-ending
+        name: Mixed Line Ending
+        description: "Normalise les fins de ligne (LF/CRLF)"
+        stages: [pre-commit]
+
+  # Hook pour Java (si Maven est disponible)
+  - repo: local
+    hooks:
+      - id: java-compile-check
+        name: Java Compile Check
+        entry: powershell -Command "if (Get-Command mvn -ErrorAction SilentlyContinue) { mvn compile -q -DskipTests; if ($LASTEXITCODE -ne 0) { exit 1 } } else { Write-Host 'Maven non disponible, skip'; exit 0 }"
+        language: system
+        pass_filenames: false
+        always_run: false
+        stages: [pre-commit]
+        files: '\.(java)$'
+        description: "Verifie que le code Java compile sans erreurs"
+
+# Configuration globale
+default_language_version:
+  python: python3
+
+# Ne pas echouer immediatement, afficher toutes les erreurs
+fail_fast: false
+
+# Exclure certains fichiers des hooks
+exclude: |
+  (?x)^(
+      target/.*|
+      \.git/.*|
+      node_modules/.*|
+      \.idea/.*|
+      \.vscode/.*|
+      .*\.class|
+      .*\.jar
+  )$

@@ -1,7 +1,102 @@
 {
-    "sonarlint.connectedMode.project": {
-        "connectionId": "myServer",
-        "projectKey": "devops_git"
-    },
-    "java.jdt.ls.vmargs": "-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx4G -Xms100m -Xlog:disable"
+  // ============================================
+  // CONFIGURATION SHIFT-LEFT - SÉCURITÉ DÉVELOPPEUR
+  // ============================================
+  
+  // SonarLint - Détection en temps réel des vulnérabilités
+  "sonarlint.connectedMode.servers": [
+    {
+      "serverId": "sonarqube",
+      "serverUrl": "http://localhost:9000",
+      "token": ""
+    }
+  ],
+  "sonarlint.rules": {
+    // Activer les règles de sécurité critiques
+    "java:S2083": "on",  // SQL Injection
+    "java:S5131": "on",  // XSS
+    "java:S2068": "on",  // Hard-coded credentials
+    "java:S2076": "on",  // Command Injection
+    "java:S5145": "on",  // Path Traversal
+    "java:S2089": "on",  // File Upload
+    "java:S2259": "on",  // Null pointer dereference
+    "java:S2092": "on"   // Cookie without HttpOnly flag
+  },
+  "sonarlint.pathToNodeExecutable": "node",
+  "sonarlint.analyzerProperties": {
+    "sonar.java.source": "17",
+    "sonar.java.target": "17"
+  },
+  
+  // Semgrep - Analyse SAST avancée
+  "semgrep.configPath": ".semgrep.yml",
+  "semgrep.enableMetrics": true,
+  "semgrep.enableAutofix": true,
+  
+  // ESLint - Linting JavaScript/TypeScript avec règles de sécurité
+  "eslint.enable": true,
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "eslint.options": {
+    "rules": {
+      "no-eval": "error",
+      "no-implied-eval": "error",
+      "no-new-func": "error",
+      "no-script-url": "error",
+      "no-inner-html": "error"
+    }
+  },
+  
+  // Python Bandit - Détection de vulnérabilités Python
+  "python.linting.banditEnabled": true,
+  "python.linting.enabled": true,
+  "python.linting.pylintEnabled": true,
+  
+  // Java - Configuration
+  "java.configuration.updateBuildConfiguration": "automatic",
+  "java.compile.nullAnalysis.mode": "automatic",
+  "java.format.settings.url": "",
+  "java.format.settings.profile": "",
+  
+  // Format on Save - Corriger automatiquement
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "explicit"
+  },
+  
+  // Détection de problèmes en temps réel
+  "problems.showCurrentInStatus": true,
+  "problems.decorations.enabled": true,
+  
+  // Fichiers à exclure de l'analyse
+  "files.exclude": {
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "**/node_modules": true,
+    "**/target": true,
+    "**/.classpath": true,
+    "**/.project": true,
+    "**/.settings": true,
+    "**/.factorypath": true
+  },
+  
+  // Recherche - Exclure les dossiers non pertinents
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/target": true,
+    "**/.git": true
+  },
+  
+  // Watcher - Exclure les fichiers volumineux
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/**": true,
+    "**/target/**": true
+  }
 }

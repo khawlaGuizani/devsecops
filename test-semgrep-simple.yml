@@ -1,0 +1,14 @@
+rules:
+  - id: test-sql-injection
+    pattern: |
+      String $SQL = "SELECT" + ... + $VAR + ...
+    message: "SQL Injection detected"
+    languages: [java]
+    severity: ERROR
+
+  - id: test-xss
+    pattern: |
+      return "<h1>" + $INPUT + "</h1>"
+    message: "XSS detected"
+    languages: [java]
+    severity: ERROR

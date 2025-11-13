@@ -1,0 +1,197 @@
+# Configuration Semgrep pour détection de vulnérabilités Java/Spring Boot
+# Semgrep détecte automatiquement les failles de sécurité en temps réel
+
+rules:
+  # Injection SQL - Concaténation de chaînes SQL
+  - id: sql-injection-concat
+    patterns:
+      - pattern-either:
+          - pattern: |
+              $SQL = "SELECT" + ... + $VAR + ...
+          - pattern: |
+              String $SQL = "SELECT" + ... + $VAR + ...
+          - pattern: |
+              $SQL = "SELECT * FROM" + ... + $VAR + ...
+          - pattern: |
+              $SQL = "..." + $VAR + "'"
+          - pattern-inside: |
+              $TYPE $VAR = "SELECT" + ... + $PARAM + ...
+    message: "Risque d'injection SQL detecte (concatenation de chaines). Utilisez des PreparedStatement ou des requetes parametrees."
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-89: SQL Injection"
+      owasp: "A03:2021 - Injection"
+
+  # Injection SQL - executeQuery avec concaténation
+  - id: sql-injection-execute
+    pattern: |
+      $QUERY.executeQuery($INPUT)
+    message: "⚠️ Risque d'injection SQL détecté. Utilisez des PreparedStatement ou des requêtes paramétrées."
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-89: SQL Injection"
+      owasp: "A03:2021 - Injection"
+
+  # XSS (Cross-Site Scripting) - Retour direct d'input utilisateur
+  - id: xss-vulnerability
+    patterns:
+      - pattern-either:
+          - pattern: |
+              response.getWriter().print($INPUT)
+          - pattern: |
+              response.getWriter().write($INPUT)
+          - pattern: |
+              response.getWriter().append($INPUT)
+          - pattern: |
+              return "<h1>" + $INPUT + "</h1>"
+          - pattern: |
+              return "<h1>" + ... + "</h1>"
+          - pattern: |
+              return "<" + ... + $INPUT + ... + ">"
+          - pattern: |
+              return $INPUT
+          - pattern: |
+              return "<div>" + $PARAM + "</div>"
+          - pattern-inside: |
+              return "<" + ... + $VAR + ... + ">"
+    message: "⚠️ Risque de XSS détecté. Échappez ou validez les entrées utilisateur avant l'affichage."
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-79: Cross-site Scripting"
+      owasp: "A03:2021 - Injection"
+
+  # Secrets exposés (API keys, passwords, tokens)
+  - id: exposed-secrets
+    patterns:
+      - pattern-either:
+          - pattern: |
+              $KEY = "$SECRET"
+          - pattern: |
+              $KEY = '$SECRET'
+          - pattern: |
+              password = "$SECRET"
+          - pattern: |
+              apiKey = "$SECRET"
+          - pattern: |
+              token = "$SECRET"
+    message: "⚠️ Secret potentiellement exposé dans le code. Utilisez des variables d'environnement ou un gestionnaire de secrets."
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-798: Use of Hard-coded Credentials"
+      owasp: "A07:2021 - Identification and Authentication Failures"
+
+  # Injection de commandes
+  - id: command-injection
+    patterns:
+      - pattern-either:
+          - pattern: |
+              Runtime.getRuntime().exec($INPUT)
+          - pattern: |
+              ProcessBuilder($INPUT)
+    message: "⚠️ Risque d'injection de commandes. Validez et sanitisez les entrées utilisateur."
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-78: OS Command Injection"
+      owasp: "A03:2021 - Injection"
+
+  # Désérialisation non sécurisée
+  - id: unsafe-deserialization
+    patterns:
+      - pattern-either:
+          - pattern: |
+              ObjectInputStream($INPUT).readObject()
+          - pattern: |
+              new ObjectInputStream($INPUT)
+    message: "⚠️ Désérialisation non sécurisée détectée. Utilisez des mécanismes de validation ou évitez la désérialisation d'objets non fiables."
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-502: Deserialization of Untrusted Data"
+      owasp: "A08:2021 - Software and Data Integrity Failures"
+
+  # Validation manquante des entrées
+  - id: missing-input-validation
+    pattern: |
+      @RequestMapping(...)
+      public $RETURN $METHOD(@RequestParam $PARAM) {
+        ...
+      }
+    message: "⚠️ Validation des entrées manquante. Ajoutez @Valid et des annotations de validation (@NotNull, @Size, etc.)."
+    languages: [java]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-20: Improper Input Validation"
+      owasp: "A03:2021 - Injection"
+
+  # Logging de données sensibles
+  - id: sensitive-data-logging
+    patterns:
+      - pattern-either:
+          - pattern: |
+              logger.info("password: " + $PASSWORD)
+          - pattern: |
+              logger.debug("token: " + $TOKEN)
+          - pattern: |
+              System.out.println("secret: " + $SECRET)
+    message: "⚠️ Données sensibles potentiellement loggées. Évitez de logger les mots de passe, tokens, ou secrets."
+    languages: [java]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-532: Insertion of Sensitive Information into Log File"
+      owasp: "A09:2021 - Security Logging and Monitoring Failures"
+
+  # CORS mal configuré
+  - id: insecure-cors
+    pattern: |
+      @CrossOrigin(origins = "*")
+    message: "⚠️ CORS configuré avec wildcard (*). Restreignez les origines autorisées."
+    languages: [java]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-942: Permissive Cross-domain Policy with Untrusted Domains"
+      owasp: "A05:2021 - Security Misconfiguration"
+
+  # Utilisation de méthodes HTTP non sécurisées
+  - id: insecure-http-methods
+    pattern: |
+      @RequestMapping(method = RequestMethod.GET, ...)
+      public $RETURN $METHOD(@RequestBody $BODY) {
+        ...
+      }
+    message: "⚠️ Utilisation de GET avec @RequestBody. Les données sensibles ne doivent pas être transmises via GET."
+    languages: [java]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-598: Use of GET Request Method With Sensitive Query Strings"
+      owasp: "A01:2021 - Broken Access Control"
+
+  # Weak cryptography
+  - id: weak-cryptography
+    patterns:
+      - pattern-either:
+          - pattern: |
+              MessageDigest.getInstance("MD5")
+          - pattern: |
+              MessageDigest.getInstance("SHA1")
+    message: "⚠️ Utilisation d'algorithmes de hachage faibles (MD5, SHA1). Utilisez SHA-256 ou supérieur."
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+      owasp: "A02:2021 - Cryptographic Failures"

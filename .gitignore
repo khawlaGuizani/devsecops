@@ -1,0 +1,73 @@
+# Fichiers de build
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+.settings/
+.classpath
+.project
+
+# Secrets et fichiers sensibles - NE JAMAIS COMMITER
+*.key
+*.pem
+*.p12
+*.jks
+*.pfx
+*.keystore
+*.truststore
+.env
+.env.local
+.env.*.local
+secrets/
+credentials/
+*.secret
+*.password
+config/secrets.properties
+application-secrets.properties
+
+# Fichiers temporaires
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Rapports de sécurité (peuvent contenir des informations sensibles)
+*-report.json
+*-report.html
+*-scan.txt
+gitleaks-report.json
+trivy-*.txt
+zap-report/
+dependency-check-report/
+
+# Node modules (si du frontend est ajouté)
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Python (si utilisé pour scripts)
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Pre-commit
+.pre-commit/
