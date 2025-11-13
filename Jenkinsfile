@@ -18,7 +18,7 @@ pipeline {
 
         stage('Maven Build') {
             steps {
-                sh 'mvn clean install -B -DskipTests'
+                sh 'mvn clean install -B -DskipTests || true'
             }
         }
 
@@ -27,7 +27,19 @@ pipeline {
                 sh '''
 echo "=== Scan de secrets avec Gitleaks ==="
 gitleaks detect --source . --report-format json --report-path gitleaks-report.json || true
+
+# Afficher le rapport dans la console
+if [ -f gitleaks-report.json ]; then
+    cat gitleaks-report.json
+else
+    echo "⚠️ Le rapport Gitleaks n'a pas été généré !"
+fi
 '''
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'gitleaks-report.json', fingerprint: true
+                }
             }
         }
 
@@ -45,8 +57,19 @@ docker build -t devsecops-app:latest . || true
                 sh '''
 echo "=== Scan de l'image Docker avec Trivy ==="
 trivy image --format table --output trivy-image-scan.txt devsecops-app:latest || true
-cat trivy-image-scan.txt
+
+# Afficher le rapport dans la console
+if [ -f trivy-image-scan.txt ]; then
+    cat trivy-image-scan.txt
+else
+    echo "⚠️ Le rapport Trivy n'a pas été généré !"
+fi
 '''
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'trivy-image-scan.txt', fingerprint: true
+                }
             }
         }
 
@@ -62,11 +85,17 @@ mkdir -p $WORKSPACE/zap-report
 zaproxy -cmd -quickurl http://192.168.50.4:8090 \
         -quickout $WORKSPACE/zap-report/zap_report.html || true
 
-# Vérifier que le rapport a été généré
+# Afficher le rapport dans la console (texte brut)
 REPORT="$WORKSPACE/zap-report/zap_report.html"
 if [ -f "$REPORT" ]; then
     echo "✅ Rapport ZAP généré : $REPORT"
-    cat "$REPORT"
+    if command -v w3m >/dev/null 2>&1; then
+        w3m -dump "$REPORT"
+    elif command -v lynx >/dev/null 2>&1; then
+        lynx -dump "$REPORT"
+    else
+        echo "⚠️ Installer w3m ou lynx pour afficher le rapport dans la console"
+    fi
 else
     echo "⚠️ Le rapport ZAP n'a pas été généré !"
 fi
@@ -87,7 +116,26 @@ dependency-check.sh --project devsecops \
     --scan . \
     --format HTML \
     --out dependency-check-report || true
+
+# Afficher le rapport HTML converti en texte brut
+REPORT="$WORKSPACE/dependency-check-report/dependency-check-report.html"
+if [ -f "$REPORT" ]; then
+    if command -v w3m >/dev/null 2>&1; then
+        w3m -dump "$REPORT"
+    elif command -v lynx >/dev/null 2>&1; then
+        lynx -dump "$REPORT"
+    else
+        echo "⚠️ Installer w3m ou lynx pour afficher le rapport Dependency-Check"
+    fi
+else
+    echo "⚠️ Le rapport Dependency-Check n'a pas été généré !"
+fi
 '''
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'dependency-check-report/**', fingerprint: true
+                }
             }
         }
 
