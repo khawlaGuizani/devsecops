@@ -55,21 +55,22 @@ pipeline {
                 sh '''
                 echo "=== DAST scan avec OWASP ZAP ==="
 
-                # Créer un dossier temporaire pour les rapports ZAP
+                # Créer un dossier pour les rapports ZAP
                 mkdir -p $WORKSPACE/zap-report
                 chmod 777 $WORKSPACE/zap-report
 
-                # Lancer ZAP en mode baseline scan, accéder à l'app sur le port 8090
+                # Lancer ZAP en mode baseline scan
+                # - host.docker.internal permet au conteneur d'accéder à l'application sur la VM hôte
                 docker run --rm \
                     -v $WORKSPACE/zap-report:/zap/wrk/:rw \
                     ghcr.io/zaproxy/zaproxy:stable \
                     zap-baseline.py -t http://host.docker.internal:8090 -r zap_report.html || true
 
-                # Afficher le rapport si créé
+                # Vérifier que le rapport a été généré
                 if [ -f $WORKSPACE/zap-report/zap_report.html ]; then
                     cat $WORKSPACE/zap-report/zap_report.html
                 else
-                    echo "ZAP report not generated"
+                    echo "⚠️ Le rapport ZAP n'a pas été généré !"
                 fi
                 '''
             }
