@@ -7,7 +7,7 @@ pipeline {
     }
 
     stages {
-        stage('GIT') {
+        stage('Checkout SCM') {
             steps {
                 git branch: 'main',
                     changelog: false,
@@ -28,7 +28,6 @@ pipeline {
 echo "=== Scan de secrets avec Gitleaks ==="
 gitleaks detect --source . --report-format json --report-path gitleaks-report.json || true
 
-# Afficher le rapport dans la console
 if [ -f gitleaks-report.json ]; then
     cat gitleaks-report.json
 else
@@ -58,7 +57,6 @@ docker build -t devsecops-app:latest . || true
 echo "=== Scan de l'image Docker avec Trivy ==="
 trivy image --format table --output trivy-image-scan.txt devsecops-app:latest || true
 
-# Afficher le rapport dans la console
 if [ -f trivy-image-scan.txt ]; then
     cat trivy-image-scan.txt
 else
@@ -78,14 +76,13 @@ fi
                 sh '''
 echo "=== DAST scan avec OWASP ZAP (installé localement) ==="
 
-# Créer un dossier pour les rapports ZAP
-mkdir -p $WORKSPACE/zap-report
+mkdir -p "$WORKSPACE/zap-report"
 
-# Lancer ZAP en mode baseline scan
-zaproxy -cmd -quickurl http://192.168.50.4:8090 \
-        -quickout $WORKSPACE/zap-report/zap_report.html || true
+# Change ZAP proxy port to avoid Jenkins 8080 conflict
+zaproxy -cmd -port 8095 \
+    -quickurl http://192.168.50.4:8090 \
+    -quickout "$WORKSPACE/zap-report/zap_report.html" || true
 
-# Afficher le rapport dans la console (texte brut)
 REPORT="$WORKSPACE/zap-report/zap_report.html"
 if [ -f "$REPORT" ]; then
     echo "✅ Rapport ZAP généré : $REPORT"
@@ -117,7 +114,6 @@ dependency-check.sh --project devsecops \
     --format HTML \
     --out dependency-check-report || true
 
-# Afficher le rapport HTML converti en texte brut
 REPORT="$WORKSPACE/dependency-check-report/dependency-check-report.html"
 if [ -f "$REPORT" ]; then
     if command -v w3m >/dev/null 2>&1; then
