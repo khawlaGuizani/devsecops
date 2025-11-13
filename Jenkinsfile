@@ -53,22 +53,20 @@ pipeline {
         stage('DAST - OWASP ZAP Scan') {
             steps {
                 sh '''
-                echo "=== DAST scan avec OWASP ZAP ==="
+                echo "=== DAST scan avec OWASP ZAP (installé localement) ==="
 
                 # Créer un dossier pour les rapports ZAP
-                mkdir -p $WORKSPACE/zap-report
-                chmod 777 $WORKSPACE/zap-report
+                mkdir -p /var/jenkins_home/zap-report
+                chmod 777 /var/jenkins_home/zap-report
 
                 # Lancer ZAP en mode baseline scan
-                # - host.docker.internal permet au conteneur d'accéder à l'application sur la VM hôte
-                docker run --rm \
-                    -v $WORKSPACE/zap-report:/zap/wrk/:rw \
-                    ghcr.io/zaproxy/zaproxy:stable \
-                    zap-baseline.py -t http://host.docker.internal:8090 -r zap_report.html || true
+                # Remplacer l'URL par celle de ton application
+                zaproxy -cmd -quickurl http://192.168.50.4:8090 \
+                        -quickout /var/jenkins_home/zap-report/zap_report.html || true
 
                 # Vérifier que le rapport a été généré
-                if [ -f $WORKSPACE/zap-report/zap_report.html ]; then
-                    cat $WORKSPACE/zap-report/zap_report.html
+                if [ -f /var/jenkins_home/zap-report/zap_report.html ]; then
+                    cat /var/jenkins_home/zap-report/zap_report.html
                 else
                     echo "⚠️ Le rapport ZAP n'a pas été généré !"
                 fi
