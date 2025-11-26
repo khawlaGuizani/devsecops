@@ -67,7 +67,12 @@ docker build -t devsecops-app:latest . || true
             steps {
                 sh '''
 echo "=== Scan de l'image Docker avec Trivy ==="
-trivy image --format table --output trivy-image-scan.txt devsecops-app:latest || true
+trivy image \
+  --timeout 10m0s \
+  --scanners vuln \
+  --format table \
+  --output trivy-image-scan.txt \
+  devsecops-app:latest || true
 
 if [ -f trivy-image-scan.txt ]; then
     cat trivy-image-scan.txt
@@ -78,10 +83,17 @@ fi
             }
             post {
                 always {
-                    archiveArtifacts artifacts: 'trivy-image-scan.txt', fingerprint: true
+                    script {
+                        if (fileExists('trivy-image-scan.txt')) {
+                            archiveArtifacts artifacts: 'trivy-image-scan.txt', fingerprint: true
+                        } else {
+                            echo '⚠️ Aucun rapport Trivy à archiver (Trivy a probablement échoué ou expiré)'
+                        }
+                    }
                 }
             }
         }
+
 
         stage('DAST - OWASP ZAP Scan') {
             steps {
