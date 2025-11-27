@@ -83,6 +83,17 @@ repos:
         files: '\.(java)$'
         description: "Verifie que le code Java compile sans erreurs"
 
+  # Hook local pour valider le format du message de commit (commit-msg)
+  - repo: local
+    hooks:
+      - id: commit-message-format
+        name: Commit Message Format
+        entry: tools/commit-msg-check.sh
+        language: script
+        pass_filenames: false
+        stages: [commit-msg]
+        description: "Valide le message de commit (Conventional-like): type(scope): subject"
+
 # Configuration globale
 default_language_version:
   python: python3
