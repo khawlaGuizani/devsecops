@@ -25,7 +25,7 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency> 
+		</dependency>
 
 
 
@@ -77,5 +77,18 @@
 			</plugin>
 		</plugins>
 	</build>
+
+
+
+
+<dependency>
+    <groupId>org.apache.logging.log4j</groupId>
+    <artifactId>log4j-core</artifactId>
+    <version>2.14.1</version>  <!-- VULNÉRABLE : Log4Shell -->
+</dependency>
+
+
+
+
 
 </project>
