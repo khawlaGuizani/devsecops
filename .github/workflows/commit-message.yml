@@ -1,0 +1,54 @@
+name: Validate commit messages
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate-commit-messages:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate commit messages
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Determine commit range depending on event
+          if [ "${{ github.event_name }}" = "push" ]; then
+            range="${{ github.event.before }}..${{ github.sha }}"
+          else
+            # For pull_request, check commits in the PR
+            range="$(git rev-list --no-merges origin/${{ github.head_ref }}..${{ github.sha }} || git rev-list --no-merges ${{ github.sha }})"
+          fi
+
+          echo "Checking commits in range: $range"
+
+          bad=0
+          # If range resolves to nothing, fall back to last commit
+          if [ -z "$range" ]; then
+            commits="${{ github.sha }}"
+          else
+            commits=$(git rev-list --no-merges $range || echo "${{ github.sha }}")
+          fi
+
+          regex='^(feat|fix|chore|docs|refactor|test|style)(\(.+\))?: .{1,}'
+
+          for c in $commits; do
+            msg=$(git log --format=%B -n 1 $c | head -n1)
+            if ! echo "$msg" | grep -Eq "$regex"; then
+              echo "Commit $c has invalid message: '$msg'"
+              bad=1
+            fi
+          done
+
+          if [ "$bad" -eq 1 ]; then
+            echo "One or more commit messages are invalid. Expected pattern: type(scope): subject"
+            exit 1
+          fi
+
+          echo "All commit messages are valid."
