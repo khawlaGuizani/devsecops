@@ -62,12 +62,5 @@ public class UserRestControl {
 
 
 
-	// Endpoint ajouté pour tester SonarQube (intentionnellement vulnérable)
-	@GetMapping("/test-sonar")
-	public String testSonar() {
-		String password = "admin123"; // VULNÉRABILITÉ : mot de passe en dur
-		System.out.println("Secret = " + password); // fuite d’information
-		return "Test SonarQube: OK";
-	}
 
 }
