@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import tn.esprit.spring.entities.User;
@@ -18,16 +19,15 @@ import tn.esprit.spring.services.IUserService;
 @RestController // = @Controller + @ResponseBody
 @RequestMapping("/user")
 public class UserRestControl {
-//khawla
+	// khawla
 	@Autowired
 	IUserService userService;
-
 
 	// URL : http://localhost:????/????/????/retrieve-all-users
 	@GetMapping("/retrieve-all-users")
 	public List<User> retrieveAllUsers() {
 		return userService.retrieveAllUsers();
-		//return list;
+		// return list;
 	}
 
 	// http://localhost:????/timesheet-devops/retrieve-user/{user-id}
@@ -36,14 +36,11 @@ public class UserRestControl {
 		return userService.retrieveUser(userId);
 	}
 
-
-
 	// Ajouter User : http://localhost:????/timesheet-devops/add-user
-	//public User addUser(@RequestBody User u) {
-		//User user = userService.addUser(u);
-		//return user;
-	//}
-
+	// public User addUser(@RequestBody User u) {
+	// User user = userService.addUser(u);
+	// return user;
+	// }
 
 	// Supprimer User :
 	// http://localhost:????/timesheet-devops/remove-user/{user-id}
@@ -59,8 +56,9 @@ public class UserRestControl {
 		return userService.updateUser(user);
 	}
 
-
-
-
+	@GetMapping("/xss")
+	public String testXss(@RequestParam String name) {
+		return "Hello " + name; // VULNÉRABILITÉ XSS
+	}
 
 }
