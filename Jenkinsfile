@@ -7,6 +7,7 @@
     }
 
     stages {
+
         stage('Checkout SCM') {
             steps {
                 git branch: 'main',
@@ -43,7 +44,7 @@ gitleaks detect --source . --report-format json --report-path gitleaks-report.js
 if [ -f gitleaks-report.json ]; then
     cat gitleaks-report.json
 else
-    echo " Le rapport Gitleaks n'a pas été généré !"
+    echo "Le rapport Gitleaks n'a pas été généré !"
 fi
 '''
             }
@@ -77,7 +78,7 @@ trivy image \
 if [ -f trivy-image-scan.txt ]; then
     cat trivy-image-scan.txt
 else
-    echo " Le rapport Trivy n'a pas été généré !"
+    echo "Le rapport Trivy n'a pas été généré !"
 fi
 '''
             }
@@ -87,7 +88,7 @@ fi
                         if (fileExists('trivy-image-scan.txt')) {
                             archiveArtifacts artifacts: 'trivy-image-scan.txt', fingerprint: true
                         } else {
-                            echo ' Aucun rapport Trivy à archiver (Trivy a probablement échoué ou expiré)'
+                            echo 'Aucun rapport Trivy à archiver.'
                         }
                     }
                 }
@@ -97,27 +98,26 @@ fi
         stage('DAST - OWASP ZAP Scan') {
             steps {
                 sh '''
-echo "=== DAST scan avec OWASP ZAP (installé localement) ==="
+echo "=== DAST scan avec OWASP ZAP ==="
 
 mkdir -p "$WORKSPACE/zap-report"
 
-# Change ZAP proxy port to avoid Jenkins 8080 conflict
 zaproxy -cmd -port 8095 \
     -quickurl http://192.168.50.4:8090 \
     -quickout "$WORKSPACE/zap-report/zap_report.html" || true
 
 REPORT="$WORKSPACE/zap-report/zap_report.html"
 if [ -f "$REPORT" ]; then
-    echo " Rapport ZAP généré : $REPORT"
+    echo "Rapport ZAP généré : $REPORT"
     if command -v w3m >/dev/null 2>&1; then
         w3m -dump "$REPORT"
     elif command -v lynx >/dev/null 2>&1; then
         lynx -dump "$REPORT"
     else
-        echo " Installer w3m ou lynx pour afficher le rapport dans la console"
+        echo "Installer w3m ou lynx pour afficher le rapport"
     fi
 else
-    echo " Le rapport ZAP n'a pas été généré !"
+    echo "Le rapport ZAP n'a pas été généré !"
 fi
 '''
             }
@@ -144,10 +144,10 @@ if [ -f "$REPORT" ]; then
     elif command -v lynx >/dev/null 2>&1; then
         lynx -dump "$REPORT"
     else
-        echo " Installer w3m ou lynx pour afficher le rapport Dependency-Check"
+        echo "Installer w3m ou lynx pour afficher le rapport"
     fi
 else
-    echo " Le rapport Dependency-Check n'a pas été généré !"
+    echo "Le rapport Dependency-Check n'a pas été généré !"
 fi
 '''
             }
