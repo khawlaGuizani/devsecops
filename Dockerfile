@@ -55,4 +55,4 @@ ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
 
 
 #VULNÉRABLE, ancienne version d'Ubuntu
-FROM ubuntu:14.04
+#FROM ubuntu:14.04

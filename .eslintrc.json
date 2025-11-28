@@ -21,7 +21,13 @@
     "no-debugger": "error",
     "no-unused-vars": "warn",
     "no-undef": "error",
-    "eqeqeq": ["error", "always"],
-    "curly": ["error", "all"]
+    "eqeqeq": [
+      "error",
+      "always"
+    ],
+    "curly": [
+      "error",
+      "all"
+    ]
   }
 }

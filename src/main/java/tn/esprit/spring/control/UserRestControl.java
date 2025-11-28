@@ -56,9 +56,9 @@ public class UserRestControl {
 		return userService.updateUser(user);
 	}
 
-	@GetMapping("/xss")
-	public String testXss(@RequestParam String name) {
-		return "Hello " + name; // VULNÉRABILITÉ XSS
-	}
+	//@GetMapping("/xss")
+	//public String testXss(@RequestParam String name) {
+	//	return "Hello " + name; // VULNÉRABILITÉ XSS
+	//}
 
 }
