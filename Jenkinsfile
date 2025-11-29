@@ -1,4 +1,4 @@
-pipeline {
+﻿pipeline {
     agent any
 
     environment {
@@ -128,32 +128,31 @@ fi
             }
         }
 
-        stage('SCA - Dependency Analysis') {
-            steps {
-                sh '''
+       stage('SCA - Dependency Analysis') {
+    steps {
+        sh '''
 echo "=== Analyse SCA avec OWASP Dependency-Check ==="
 dependency-check.sh --project devsecops \
     --scan . \
     --format HTML \
-    --out dependency-check-report || true
+    --out dependency-check-report \
+    --data dependency-check-data || true
 
 REPORT="$WORKSPACE/dependency-check-report/dependency-check-report.html"
 if [ -f "$REPORT" ]; then
-    if command -v w3m >/dev/null 2>&1; then
-        w3m -dump "$REPORT"
-    elif command -v lynx >/dev/null 2>&1; then
-        lynx -dump "$REPORT"
-    else
-        echo " Installer w3m ou lynx pour afficher le rapport Dependency-Check"
-    fi
+    echo " Rapport Dependency-Check généré : $REPORT"
 else
     echo " Le rapport Dependency-Check n'a pas été généré !"
 fi
 '''
-            }
-            post {
-                always {
+    }
+    post {
+        always {
+            script {
+                if (fileExists('dependency-check-report/dependency-check-report.html')) {
                     archiveArtifacts artifacts: 'dependency-check-report/**', fingerprint: true
+                } else {
+                    echo 'Aucun rapport Dependency-Check à archiver (dependency-check a échoué).'
                 }
             }
         }
