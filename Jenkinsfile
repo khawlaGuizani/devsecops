@@ -7,6 +7,7 @@
     }
 
     stages {
+
         stage('Checkout SCM') {
             steps {
                 git branch: 'main',
@@ -27,9 +28,9 @@
                 sh '''
 echo "=== Analyse SonarQube ==="
 mvn sonar:sonar \
-    -Dsonar.projectKey=devops_git \
-    -Dsonar.host.url=${SONAR_HOST_URL} \
-    -Dsonar.login=${SONAR_AUTH_TOKEN} || true
+  -Dsonar.projectKey=devops_git \
+  -Dsonar.host.url=${SONAR_HOST_URL} \
+  -Dsonar.login=${SONAR_AUTH_TOKEN} || true
 '''
             }
         }
@@ -87,7 +88,7 @@ fi
                         if (fileExists('trivy-image-scan.txt')) {
                             archiveArtifacts artifacts: 'trivy-image-scan.txt', fingerprint: true
                         } else {
-                            echo ' Aucun rapport Trivy à archiver (Trivy a probablement échoué ou expiré)'
+                            echo 'Aucun rapport Trivy à archiver (Trivy a probablement échoué ou expiré)'
                         }
                     }
                 }
@@ -103,8 +104,8 @@ mkdir -p "$WORKSPACE/zap-report"
 
 # Change ZAP proxy port to avoid Jenkins 8080 conflict
 zaproxy -cmd -port 8095 \
-    -quickurl http://192.168.50.4:8090 \
-    -quickout "$WORKSPACE/zap-report/zap_report.html" || true
+  -quickurl http://192.168.50.4:8090 \
+  -quickout "$WORKSPACE/zap-report/zap_report.html" || true
 
 REPORT="$WORKSPACE/zap-report/zap_report.html"
 if [ -f "$REPORT" ]; then
@@ -128,15 +129,15 @@ fi
             }
         }
 
-       stage('SCA - Dependency Analysis') {
-    steps {
-        sh '''
+        stage('SCA - Dependency Analysis') {
+            steps {
+                sh '''
 echo "=== Analyse SCA avec OWASP Dependency-Check ==="
 dependency-check.sh --project devsecops \
-    --scan . \
-    --format HTML \
-    --out dependency-check-report \
-    --data dependency-check-data || true
+  --scan . \
+  --format HTML \
+  --out dependency-check-report \
+  --data dependency-check-data || true
 
 REPORT="$WORKSPACE/dependency-check-report/dependency-check-report.html"
 if [ -f "$REPORT" ]; then
@@ -145,16 +146,19 @@ else
     echo " Le rapport Dependency-Check n'a pas été généré !"
 fi
 '''
-    }
-    post {
-        always {
-            script {
-                if (fileExists('dependency-check-report/dependency-check-report.html')) {
-                    archiveArtifacts artifacts: 'dependency-check-report/**', fingerprint: true
-                } else {
-                    echo 'Aucun rapport Dependency-Check à archiver (dependency-check a échoué).'
+            }
+            post {
+                always {
+                    script {
+                        if (fileExists('dependency-check-report/dependency-check-report.html')) {
+                            archiveArtifacts artifacts: 'dependency-check-report/**', fingerprint: true
+                        } else {
+                            echo 'Aucun rapport Dependency-Check à archiver (dependency-check a échoué).'
+                        }
+                    }
                 }
             }
         }
-    }
-}
+
+    } // fin stages
+} // fin pipeline
