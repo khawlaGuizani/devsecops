@@ -160,5 +160,5 @@ fi
             }
         }
 
-    } // fin stages
-} // fin pipeline
+    }
+}
