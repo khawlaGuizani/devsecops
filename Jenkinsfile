@@ -137,7 +137,8 @@ dependency-check.sh --project devsecops \
   --scan . \
   --format HTML \
   --out dependency-check-report \
-  --data dependency-check-data || true
+  --data dependency-check-data \
+  --noupdate || true
 
 REPORT="$WORKSPACE/dependency-check-report/dependency-check-report.html"
 if [ -f "$REPORT" ]; then
