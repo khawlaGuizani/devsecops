@@ -129,15 +129,37 @@ fi
             }
         }
 
-        stage('SCA - Dependency Analysis') {
-            steps {
-                sh '''
+ stage('SCA - Dependency Analysis') {
+    steps {
+        sh '''
 echo "=== Analyse SCA avec OWASP Dependency-Check ==="
+
+echo "Utilisateur courant : $(whoami)"
+echo "PATH dans Jenkins : $PATH"
+echo "Répertoire courant : $(pwd)"
+echo "WORKSPACE : $WORKSPACE"
+
+echo "== Test de la présence de dependency-check.sh =="
+which dependency-check.sh || echo "dependency-check.sh introuvable dans le PATH"
+ls -l /usr/local/bin/dependency-check.sh || echo "/usr/local/bin/dependency-check.sh n'existe pas (ou pas accessible)"
+
+echo "== Version de dependency-check =="
+dependency-check.sh --version || echo "Impossible d'exécuter dependency-check.sh"
+
+echo "== Version de Java =="
+java -version || echo "Java introuvable pour Jenkins"
+
+mkdir -p "$WORKSPACE/dependency-check-report" "$WORKSPACE/dependency-check-data"
+
+echo "== Lancement du scan =="
 dependency-check.sh --project devsecops \
-  --scan . \
+  --scan "$WORKSPACE" \
   --format HTML \
-  --out dependency-check-report \
-  --data dependency-check-data || true
+  --out "$WORKSPACE/dependency-check-report" \
+  --data "$WORKSPACE/dependency-check-data"
+
+echo "== Contenu après scan =="
+ls -R "$WORKSPACE/dependency-check-report" || echo "Répertoire de rapport introuvable"
 
 REPORT="$WORKSPACE/dependency-check-report/dependency-check-report.html"
 if [ -f "$REPORT" ]; then
@@ -146,19 +168,18 @@ else
     echo " Le rapport Dependency-Check n'a pas été généré !"
 fi
 '''
-            }
-            post {
-                always {
-                    script {
-                        if (fileExists('dependency-check-report/dependency-check-report.html')) {
-                            archiveArtifacts artifacts: 'dependency-check-report/**', fingerprint: true
-                        } else {
-                            echo 'Aucun rapport Dependency-Check à archiver (dependency-check a échoué).'
-                        }
-                    }
+    }
+    post {
+        always {
+            script {
+                if (fileExists('dependency-check-report/dependency-check-report.html')) {
+                    archiveArtifacts artifacts: 'dependency-check-report/**', fingerprint: true
+                } else {
+                    echo 'Aucun rapport Dependency-Check à archiver (dependency-check a échoué).'
                 }
             }
         }
-
     }
+}
+
 }
