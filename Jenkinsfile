@@ -169,4 +169,13 @@ fi
         }
 
     } // fin stages
+    post {
+    always {
+        emailext(
+            to: "any@mailtrap.io",
+            subject: "Build ${currentBuild.currentResult}",
+            body: "Le build est terminé.\n\nStatus : ${currentBuild.currentResult}"
+        )
+    }
+}
 } // fin pipeline
