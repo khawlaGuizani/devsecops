@@ -106,7 +106,7 @@ fi
         stage('Docker Scan - Trivy') {
             steps {
                 sh '''
-echo "=== Scan de l'image Docker avec Trivy ==="
+//echo "=== Scan de l'image Docker avec Trivy ==="
 trivy image \
   --timeout 10m0s \
   --scanners vuln \
