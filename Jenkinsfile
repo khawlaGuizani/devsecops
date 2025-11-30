@@ -140,8 +140,8 @@ dependency-check.sh --project devsecops \
   --scan "$WORKSPACE" \
   --format HTML \
   --out "$WORKSPACE/dependency-check-report" \
-  --data "$WORKSPACE/dependency-check-data" || true
-
+  --data "$WORKSPACE/dependency-check-data" \
+  --noupdate || true
 REPORT="$WORKSPACE/dependency-check-report/dependency-check-report.html"
 if [ -f "$REPORT" ]; then
     echo " Rapport Dependency-Check généré : $REPORT"
