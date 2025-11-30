@@ -129,9 +129,9 @@ fi
             }
         }
 
- stage('SCA - Dependency Analysis') {
-    steps {
-        sh '''
+        stage('SCA - Dependency Analysis') {
+            steps {
+                sh '''
 echo "=== Analyse SCA avec OWASP Dependency-Check ==="
 
 echo "Utilisateur courant : $(whoami)"
@@ -168,18 +168,19 @@ else
     echo " Le rapport Dependency-Check n'a pas été généré !"
 fi
 '''
-    }
-    post {
-        always {
-            script {
-                if (fileExists('dependency-check-report/dependency-check-report.html')) {
-                    archiveArtifacts artifacts: 'dependency-check-report/**', fingerprint: true
-                } else {
-                    echo 'Aucun rapport Dependency-Check à archiver (dependency-check a échoué).'
+            }
+            post {
+                always {
+                    script {
+                        if (fileExists('dependency-check-report/dependency-check-report.html')) {
+                            archiveArtifacts artifacts: 'dependency-check-report/**', fingerprint: true
+                        } else {
+                            echo 'Aucun rapport Dependency-Check à archiver (dependency-check a échoué).'
+                        }
+                    }
                 }
             }
         }
-    }
-}
 
-}
+    } // fin stages
+} // fin pipeline
