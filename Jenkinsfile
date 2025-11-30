@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        SONAR_HOST_URL = 'http://192.168.50.4:9000'
+        SONAR_HOST_URL  = 'http://192.168.50.4:9000'
         SONAR_AUTH_TOKEN = credentials('sonarqube')
     }
 
@@ -64,20 +64,23 @@ docker build -t devsecops-app:latest . || true
             }
         }
 
-        // 👉 SCA AVANT TRIVY
+        // SCA avant Trivy
         stage('SCA - Dependency Analysis') {
             steps {
                 sh '''
 echo "=== Analyse SCA avec OWASP Dependency-Check ==="
 
-mkdir -p "$WORKSPACE/dependency-check-report" "$WORKSPACE/dependency-check-data"
+# Créer le dossier de rapport
+mkdir -p "$WORKSPACE/dependency-check-report"
 
+# Lancer l'analyse SCA
 dependency-check.sh --project devsecops \
   --scan "$WORKSPACE" \
   --format HTML \
-  --out "$WORKSPACE/dependency-check-report" \
-  --data "$WORKSPACE/dependency-check-data" \
-  --noupdate || true
+  --out "$WORKSPACE/dependency-check-report/dependency-check-report.html" || true
+
+echo "== Contenu du dossier de rapport =="
+ls -R "$WORKSPACE/dependency-check-report" || echo "Pas de dossier de rapport"
 
 REPORT="$WORKSPACE/dependency-check-report/dependency-check-report.html"
 if [ -f "$REPORT" ]; then
