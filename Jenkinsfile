@@ -129,24 +129,36 @@ fi
             }
         }
 
-         stage('SCA - Dependency Analysis') {
-            steps {
-                sh '''
-... ton gros script bash ...
+        stage('SCA - Dependency Analysis') {
+    steps {
+        sh '''
+echo "=== Analyse SCA avec OWASP Dependency-Check ==="
+
+mkdir -p "$WORKSPACE/dependency-check-report" "$WORKSPACE/dependency-check-data"
+
+dependency-check.sh --project devsecops \
+  --scan "$WORKSPACE" \
+  --format HTML \
+  --out "$WORKSPACE/dependency-check-report" \
+  --data "$WORKSPACE/dependency-check-data" || true
+
+REPORT="$WORKSPACE/dependency-check-report/dependency-check-report.html"
+if [ -f "$REPORT" ]; then
+    echo " Rapport Dependency-Check généré : $REPORT"
+else
+    echo " Le rapport Dependency-Check n'a pas été généré !"
+fi
 '''
-            }
-            post {
-                always {
-                    script {
-                        if (fileExists('dependency-check-report/dependency-check-report.html')) {
-                            archiveArtifacts artifacts: 'dependency-check-report/**', fingerprint: true
-                        } else {
-                            echo 'Aucun rapport Dependency-Check à archiver (dependency-check a échoué).'
-                        }
-                    }
+    }
+    post {
+        always {
+            script {
+                if (fileExists('dependency-check-report/dependency-check-report.html')) {
+                    archiveArtifacts artifacts: 'dependency-check-report/**', fingerprint: true
+                } else {
+                    echo 'Aucun rapport Dependency-Check à archiver (dependency-check a échoué).'
                 }
             }
         }
-
-    } // fin stages
-} // fin pipeline
+    }
+}
